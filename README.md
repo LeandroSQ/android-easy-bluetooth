@@ -70,5 +70,39 @@ btManager.send ("Hello World");// For Strings
 btManager.send (0); // For Ints, Bytes, Byte[] and Single char
 ```
 
+#### Configuration
+This library allows you to:
+- Configure custom connection validation
+- Configure custom disconnection validation
+- Configure command terminators (Default: "\r\n" aka NewLine)
+- Configure connection retry time (Default: 1000ms)
+- Configure the connection UUID (Default: "00001101-0000-1000-8000-00805f9b34fb")
 
-* Important notice * - This automatically assumes the end of messages to be a '\n' character.
+##### Custom connection and disconnection validation
+If you, like me, used an Arduino module that doesn't has a way to know if is conected or not. You can use a custom protocol like sending a message for connection and one for disconnection, so the Arduino board can keep track of the Bluetooth connection state.
+```java
+@Override
+public boolean testBluetoothConnectionProtocol () {
+  return this.bluetoothConnection.send (COMMAND_NOTIFY_CONNECTION);
+}
+
+@Override
+public boolean testBluetoothDisconnectionProtocol () {
+  return this.bluetoothConnection.send (COMMAND_NOTIFY_DISCONNECTION);
+}
+```
+
+##### Custom command terminator
+```java
+btManager.setCommandTerminator ("\r\n");// It will be used for receiving and send data, be aware of that!
+```
+
+##### Custom connection retry time
+```java
+btManager.setConnetionRetryTime (250L);// In milliseconds
+```
+
+##### Custom connection UUID
+```java
+btManager.setConnectionUuid (UUID.fromString ("<custom_uuid_here>"));
+```
