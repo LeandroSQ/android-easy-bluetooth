@@ -10,7 +10,9 @@ Tutorial on how to install it via Gradle:
 [Here](https://jitpack.io/#LeandroSQ/android-easy-bluetooth)
 
 ## Usage
-This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.
+This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.  
+You can check this example [App](https://github.com/LeandroSQ/android-easy-bluetooth/tree/master/app/src/main)
+
 ### BluetoothScanner
 This class scans for near Bluetooth devices, handles Bluetooth permissions and enabling.
 ```java
