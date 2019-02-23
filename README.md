@@ -1,8 +1,8 @@
 # Android Easy Bluetooth
-A library that makes Bluetooth communication in Android easy and simple!
-API 17+
-Java 1.8 with lambda needed (Just configure on your module settings)
-Compatible with *Kotlin*
+A library that makes Bluetooth communication in Android easy and simple!  
+API 17+  
+Java 1.8 with lambda needed (Just configure on your module settings)  
+Compatible with *Kotlin*  
 
 ## Usage
 This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.
@@ -79,16 +79,17 @@ This library allows you to:
 - Configure the connection UUID (Default: "00001101-0000-1000-8000-00805f9b34fb")
 
 ##### Custom connection and disconnection validation
-If you, like me, used an Arduino module that doesn't has a way to know if is conected or not. You can use a custom protocol like sending a message for connection and one for disconnection, so the Arduino board can keep track of the Bluetooth connection state.
+If you, like me, used an Arduino module that doesn't has a way to know if either conected or not. You can use a custom protocol to validate the connection. Like sending a message for connection and one for disconnection, so the Arduino board can keep track of the Bluetooth connection state.  
+Also this could be used for security, only accept devices that send you a password or whatever.
 ```java
 @Override
 public boolean testBluetoothConnectionProtocol () {
-  return this.bluetoothConnection.send (COMMAND_NOTIFY_CONNECTION);
+  return this.bluetoothConnection.send (COMMAND_NOTIFY_CONNECTION);// Test if the message has been delivered successfully
 }
 
 @Override
 public boolean testBluetoothDisconnectionProtocol () {
-  return this.bluetoothConnection.send (COMMAND_NOTIFY_DISCONNECTION);
+  return this.bluetoothConnection.send (COMMAND_NOTIFY_DISCONNECTION);// Test if the message has been delivered successfully
 }
 ```
 
