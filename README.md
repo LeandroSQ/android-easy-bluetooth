@@ -13,6 +13,14 @@ Tutorial on how to install it via Gradle:
 This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.  
 You can check this example [App](https://github.com/LeandroSQ/android-easy-bluetooth/tree/master/app/src/main) (There are examples of how to use Bluetooth in Android without the Library, so you can compare and see what will be better for you)
 
+### Manifest.xml
+You'll need to use this permissions on your manifest.xml:
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
 ### BluetoothScanner
 This class scans for near Bluetooth devices, handles Bluetooth permissions and enabling.
 ```java
