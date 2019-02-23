@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#2c3e50"
+	android:padding="16dp"
+	tools:context=".activity.MainActivity">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintBottom_toBottomOf="parent"
+		android:animateLayoutChanges="true"
+		android:clipToPadding="true"
+		android:clipChildren="true"
+		android:background="@drawable/shape_content_container"
+		android:elevation="1dp"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/tvHeader"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:background="#27ae60"
+			android:drawableStart="@drawable/ic_bluetooth"
+			android:drawablePadding="10dp"
+			android:transitionName="header"
+			android:gravity="center_vertical"
+			android:padding="10dp"
+			android:text="Conexão"
+			android:textColor="#FFF"
+			android:textStyle="bold"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+
+		<View
+			android:id="@+id/viewDivider"
+			android:layout_width="match_parent"
+			android:layout_height="1dp"
+			android:background="#1c8045"
+			app:layout_constraintTop_toBottomOf="@id/tvHeader" />
+
+		<android.support.v4.widget.NestedScrollView
+			android:id="@+id/scrollView"
+			android:layout_weight="1"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			app:layout_constraintBottom_toBottomOf="@id/clFooter"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/viewDivider"
+			app:layout_constraintVertical_bias="0.0">
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+
+				<TextView
+					android:id="@+id/tvNoDeviceFound"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_margin="16dp"
+					android:text="Nenhum dispositivo bluetooth encontrado!"
+					android:visibility="gone"
+					tools:visibility="visible" />
+
+				<android.support.v7.widget.RecyclerView
+					android:id="@+id/rvDevices"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+					tools:itemCount="2"
+					tools:listitem="@layout/item_device" />
+
+			</LinearLayout>
+		</android.support.v4.widget.NestedScrollView>
+
+		<android.support.constraint.ConstraintLayout
+			android:id="@+id/clFooter"
+			android:layout_width="match_parent"
+			android:layout_height="40dp"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			android:background="@drawable/shape_bottom_rounded"
+			android:foreground="?attr/selectableItemBackground"
+			app:layout_constraintStart_toStartOf="parent">
+
+			<View
+				android:id="@+id/viewDivider2"
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="#d7dbde" />
+
+			<ImageView
+				android:id="@+id/ivRefreshDevices"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:padding="6dp"
+				android:src="@drawable/ic_refresh"
+				android:tint="#27ae60"
+				android:visibility="gone"
+				tools:visibility="visible" />
+
+			<ProgressBar
+				android:id="@+id/pbDevices"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:indeterminate="true"
+				android:indeterminateTint="#21ae60"
+				android:padding="9dp"
+				android:visibility="visible"
+				tools:visibility="gone" />
+		</android.support.constraint.ConstraintLayout>
+
+	</LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#2c3e50"
+	tools:context=".activity.ControlPanelActivity">
+
+	<TextView
+		android:id="@+id/tvDeviceName"
+		android:layout_width="match_parent"
+		android:layout_height="48dp"
+		android:background="#27ae60"
+		android:gravity="center"
+		android:textAllCaps="true"
+		android:textColor="#fff"
+		android:textSize="18sp"
+		android:textStyle="bold"
+		android:transitionName="header"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		tools:text="LAPTOP - 1d:4f:Ef:01:ab:de" />
+
+	<ImageButton
+		android:id="@+id/btnState"
+		android:layout_width="128dp"
+		android:layout_height="128dp"
+		android:alpha="0.1"
+		android:background="@drawable/shape_power_button_off"
+		android:elevation="1dp"
+		android:src="@drawable/ic_power"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/tvDeviceName"
+		tools:alpha="1" />
+
+</android.support.constraint.ConstraintLayout>
