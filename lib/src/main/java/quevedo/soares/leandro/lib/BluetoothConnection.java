@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.logging.Handler;
 
 /**
  * @author Leandro Soares Quevedo
@@ -18,9 +17,10 @@ import java.util.logging.Handler;
  **/
 public class BluetoothConnection {
 
-	// Constants
-	private static final UUID CONNECTION_UUID = UUID.fromString ("00001101-0000-1000-8000-00805f9b34fb");
-	private static final long RETRY_TIMEOUT = 1000;
+	// Configuration
+	private long connectionRetryTime = 1000L;
+	private String commandTerminator = "\r\n";
+	private UUID connectionUuid = UUID.fromString ("00001101-0000-1000-8000-00805f9b34fb");
 
 	// Internal variables
 	private BluetoothDevice bluetoothDevice;
@@ -55,7 +55,7 @@ public class BluetoothConnection {
 		Log.e ("bluetooth_connection", "Connecting to device...");
 		try {
 			// Establish a connection with the device
-			this.socket = bluetoothDevice.createRfcommSocketToServiceRecord (CONNECTION_UUID);
+			this.socket = bluetoothDevice.createRfcommSocketToServiceRecord (this.connectionUuid);
 			this.socket.connect ();
 
 			// Check for custom connection protocols
@@ -65,13 +65,13 @@ public class BluetoothConnection {
 					if (this.listener != null) this.listener.onBluetoothConnected ();
 					Log.d ("bluetooth_connection", "The device has passed the custom protocol tests!");
 
-					this.listenForIncommingData ();
+					this.listenForIncomingData ();
 				} else {
 					// The connection was unsuccessful
 					// Disconnect from the device
 					this.disconnect ();
 					// Try again in the specified time
-					new android.os.Handler ().postDelayed (this::connect, RETRY_TIMEOUT);
+					new android.os.Handler ().postDelayed (this::connect, this.connectionRetryTime);
 
 					Log.e ("bluetooth_connection", "The device has failed in the custom protocol tests!");
 				}
@@ -80,7 +80,7 @@ public class BluetoothConnection {
 				if (this.listener != null) this.listener.onBluetoothConnected ();
 				Log.d ("bluetooth_connection", "The device has been connected successfully");
 
-				this.listenForIncommingData ();
+				this.listenForIncomingData ();
 			}
 		} catch (Exception e) {
 			// An error has occurred, show error message
@@ -90,7 +90,7 @@ public class BluetoothConnection {
 			this.callListenerError ("Não foi possível estabelecer conexão com o dispositivo", e);
 
 			// Try again in the specified time
-			new android.os.Handler ().postDelayed (this::connect, RETRY_TIMEOUT);
+			new android.os.Handler ().postDelayed (this::connect, connectionRetryTime);
 		}
 
 		return false;
@@ -152,7 +152,10 @@ public class BluetoothConnection {
 
 		try {
 			if (this.isConnected ()) {
+				// Send the message bytes
 				this.socket.getOutputStream ().write (message);
+				// Send the command terminator
+				this.socket.getOutputStream ().write (commandTerminator.getBytes (StandardCharsets.UTF_8));
 				return true;
 			}
 		} catch (Exception e) {
@@ -178,7 +181,10 @@ public class BluetoothConnection {
 
 		try {
 			if (this.isConnected ()) {
+				// Send the message bytes
 				this.socket.getOutputStream ().write (message);
+				// Send the command terminator
+				this.socket.getOutputStream ().write (commandTerminator.getBytes (StandardCharsets.UTF_8));
 				return true;
 			}
 		} catch (Exception e) {
@@ -225,7 +231,7 @@ public class BluetoothConnection {
 	//</editor-fold>
 
 	//<editor-fold defaultstate="collapsed" desc="Message receiving methods">
-	private void listenForIncommingData () {
+	private void listenForIncomingData () {
 		new Thread (() -> {
 			try {
 				StringBuilder messageBuffer = new StringBuilder ();
@@ -243,19 +249,19 @@ public class BluetoothConnection {
 						messageBuffer.append (new String (chunk, 0, chunkByteCount));
 
 						// Check if we've got a valid message
-						int newLineIndex = messageBuffer.indexOf ("\n");
-						if (newLineIndex != -1) {
+						int terminatorIndex = messageBuffer.indexOf (this.commandTerminator);
+						if (terminatorIndex != -1) {
 							// Treat the message
-							String message = messageBuffer.substring (0, newLineIndex);
+							String message = messageBuffer.substring (0, terminatorIndex);
 							// Call the listener
 							Log.d ("bluetooth_connection", "Received '" + message + "' message from device!");
 							this.callListenerMessageReceived (message);
 
 							// Remove the message from the buffer
-							if (newLineIndex + 1 >= messageBuffer.length ()) {
+							if (terminatorIndex + this.commandTerminator.length () >= messageBuffer.length ()) {
 								messageBuffer.setLength (0);
 							} else {
-								messageBuffer = new StringBuilder (message.substring (newLineIndex + 1));
+								messageBuffer = new StringBuilder (message.substring (terminatorIndex + 1));
 							}
 						}
 
@@ -311,6 +317,37 @@ public class BluetoothConnection {
 			});
 		}
 	}
+	//</editor-fold>
+
+	//<editor-fold defaultstate="collapsed" desc="Getters and setters">
+	public long getConnectionRetryTime () {
+		return connectionRetryTime;
+	}
+
+	public void setConnectionRetryTime (long connectionRetryTime) {
+		this.connectionRetryTime = connectionRetryTime;
+	}
+
+	public String getCommandTerminator () {
+		return commandTerminator;
+	}
+
+	public void setCommandTerminator (String commandTerminator) {
+		this.commandTerminator = commandTerminator;
+	}
+
+	public UUID getConnectionUuid () {
+		return connectionUuid;
+	}
+
+	public void setConnectionUuid (UUID connectionUuid) {
+		this.connectionUuid = connectionUuid;
+	}
+
+	public BluetoothDevice getBluetoothDevice () {
+		return bluetoothDevice;
+	}
+
 	//</editor-fold>
 
 	public interface BluetoothConnectionListener {

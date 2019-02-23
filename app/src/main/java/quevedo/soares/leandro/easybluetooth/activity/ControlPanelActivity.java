@@ -29,10 +29,10 @@ import quevedo.soares.leandro.lib.BluetoothConnection;
 
 public class ControlPanelActivity extends AppCompatActivity implements BluetoothConnection.BluetoothConnectionListener, BluetoothConnection.BluetoothConnectionProtocol {
 
-	private final static int COMMAND_NOTIFY_CONNECTION = 3;
-	private final static int COMMAND_NOTIFY_DISCONNECTION = 2;
-	private final static int COMMAND_TURN_LED_ON = 1;
-	private final static int COMMAND_TURN_LED_OFF = 0;
+	private final static char COMMAND_NOTIFY_CONNECTION = '3';
+	private final static char COMMAND_NOTIFY_DISCONNECTION = '2';
+	private final static char COMMAND_TURN_LED_ON = '1';
+	private final static char COMMAND_TURN_LED_OFF = '0';
 
 	private boolean ledState = false;
 	private BluetoothDevice device;
@@ -203,11 +203,11 @@ public class ControlPanelActivity extends AppCompatActivity implements Bluetooth
 	public void onBluetoothMessageReceived (String message) {
 		if (message.startsWith ("led")) {
 			switch (message.charAt (3)) {
-				case '0':
+				case COMMAND_TURN_LED_OFF:
 					this.ledState = false;
 					this.btnState.setBackgroundResource (R.drawable.shape_power_button_off);
 					break;
-				case '1':
+				case COMMAND_TURN_LED_ON:
 					this.ledState = true;
 					this.btnState.setBackgroundResource (R.drawable.shape_power_button_on);
 					break;
