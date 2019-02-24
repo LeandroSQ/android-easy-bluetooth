@@ -22,7 +22,7 @@ You'll need to use this permissions on your manifest.xml:
 ```
 
 ### BluetoothScanner
-This class scans for near Bluetooth devices, handles Bluetooth permissions and enabling.
+This class scans for near Bluetooth devices, handles Bluetooth permissions and automatically enables them.
 ```java
 // Setting the listeners
 BluetoothScanner scanner = new BluetoothScaner (MainActivity.this, new BluetoothScanner.BluetoothScanListener () { 
