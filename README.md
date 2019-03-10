@@ -2,12 +2,27 @@
 A library that makes Bluetooth communication in Android easy and simple!  
 API 17+  
 Java 1.8 with lambda needed (Just configure on your module settings)  
-Compatible with *Kotlin*  
+Compatible with *Kotlin*
+
+[![Release](https://jitpack.io/v/LeandroSQ/android-easy-bluetooth.svg)](https://jitpack.io/#LeandroSQ/android-easy-bluetooth)
+
+Tutorial on how to install it via Gradle:
+[Here](https://jitpack.io/#LeandroSQ/android-easy-bluetooth)
 
 ## Usage
-This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.
+This library is splitted in two main parts, the BluetoothScanner and BluetoothConnection.  
+You can check this example [App](https://github.com/LeandroSQ/android-easy-bluetooth/tree/master/app/src/main) (There are examples of how to use Bluetooth in Android without the Library, so you can compare and see what will be better for you)
+
+### Manifest.xml
+You'll need to use this permissions on your manifest.xml:
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
 ### BluetoothScanner
-This class scans for near Bluetooth devices, handles Bluetooth permissions and enabling.
+This class scans for near Bluetooth devices, handles Bluetooth permissions and automatically enables them.
 ```java
 // Setting the listeners
 BluetoothScanner scanner = new BluetoothScaner (MainActivity.this, new BluetoothScanner.BluetoothScanListener () { 
