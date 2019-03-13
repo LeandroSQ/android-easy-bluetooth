@@ -1,6 +1,7 @@
 package quevedo.soares.leandro.lib;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -20,13 +21,35 @@ public class BluetoothScanner {
 	private static final int BLUETOOTH_ENABLE_REQUEST_CODE = 1902;
 	private static final int LOCATION_ENABLE_REQUEST_CODE = 1932;
 
+	private boolean includePairedDevices = false;
+
+	private ArrayList<BluetoothDevice> bluetoothDeviceList;
+	private Activity activity;
+	private BluetoothAdapter bluetoothAdapter;
+	private BluetoothScanListener listener;
+	private boolean isInDiscoveryMode = false;
 	private BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver () {
 		@Override
 		public void onReceive (Context context, Intent intent) {
+			// Verify the intent integrity
+			if (intent == null) {
+				return;
+			}
+
 			switch (intent.getAction ()) {
 				case BluetoothDevice.ACTION_FOUND:
 					// A device was found!
 					BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
+
+					// Verify if the device wasn't listed before
+					// In some Android devices the bluetooth adapter finds the same device twice
+					for (BluetoothDevice bluetoothDevice : bluetoothDeviceList) {
+						// If we've got a device already on list, just ignore
+						if (bluetoothDevice.getAddress ().equals (device.getAddress ())) {
+							return;
+						}
+					}
+
 					// Append to the list
 					bluetoothDeviceList.add (device);
 					// Notify the listener
@@ -34,38 +57,102 @@ public class BluetoothScanner {
 					Log.d ("bluetooth_helper", "Found bluetooth device with id of " + device.getAddress ());
 					break;
 				case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+					// Set the discoveryMode flag
+					isInDiscoveryMode = true;
+
 					// The scan has just started, clear the device list
 					Log.d ("bluetooth_helper", "Bluetooth discovery started");
 					bluetoothDeviceList = new ArrayList<> ();
 
-					// Append the paired devices to the list
-					/*for (BluetoothDevice bluetoothDevice : bluetoothAdapter.getBondedDevices ()) {
-						bluetoothDeviceList.add (bluetoothDevice);
-						listener.onBluetoothDeviceFound (bluetoothDevice, true);
-						Log.d ("bluetooth_helper", "Found paired bluetooth device with id of " + bluetoothDevice.getAddress ());
-					}*/
+					// If requested, appends the already paired devices to the list
+					if (includePairedDevices) {
+						bluetoothDeviceList.addAll (getPairedDevices ());
+					}
 					break;
 				case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
 					// The scan has ended, notify the listener
 					Log.d ("bluetooth_helper", "Bluetooth discovery finished");
-					if (bluetoothDeviceList == null) bluetoothDeviceList = new ArrayList<> ();
+					if (bluetoothDeviceList == null) {
+						bluetoothDeviceList = new ArrayList<> ();
+					}
+
 					listener.onBluetoothScanEnd (bluetoothDeviceList);
 					activity.unregisterReceiver (this);
+
+					isInDiscoveryMode = false;
 					break;
 			}
 		}
 	};
-
-	private ArrayList<BluetoothDevice> bluetoothDeviceList;
-	private Activity activity;
-	private BluetoothAdapter bluetoothAdapter;
-	private BluetoothScanListener listener;
 
 	public BluetoothScanner (Activity activity, BluetoothScanListener listener) {
 		this.activity = activity;
 		this.listener = listener;
 
 		Log.d ("bluetooth_helper", "Bluetooth helper instance created!");
+	}
+
+	public boolean isAdapterAvailable () {
+		return this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled ();
+	}
+
+	public void stopDiscovery () {
+		if (this.isAdapterAvailable () && this.bluetoothAdapter.isDiscovering ()) {
+			this.bluetoothAdapter.cancelDiscovery ();
+		}
+	}
+
+	public boolean inDiscoveryMode () {
+		return this.isInDiscoveryMode;
+	}
+
+	public ArrayList<BluetoothDevice> getPairedDevices () {
+		return new ArrayList<> (bluetoothAdapter.getBondedDevices ());
+	}
+
+	@TargetApi (19)
+	public boolean pairWith (BluetoothDevice device) {
+		try {
+			return device.createBond ();
+		} catch (Exception e) {
+			e.printStackTrace ();
+			return false;
+		}
+	}
+
+	//<editor-fold defaultstate="Collapsed" desc="Permission handling">
+	public boolean handleActivityResult (int requestCode, int resultCode, Intent data) {
+		// Check if we're able to restart
+		if (requestCode == BLUETOOTH_ENABLE_REQUEST_CODE) {
+			if (this.bluetoothAdapter.isEnabled ()) {
+				this.startDiscovery ();
+			} else {
+				this.listener.onBluetoothError ("O seu adaptador Bluetooth está desativado!");
+			}
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void startDiscovery () {
+		startDiscovery (false);
+	}
+
+	public void startDiscovery (boolean includePairedDevices) {
+		this.includePairedDevices = includePairedDevices;
+
+		Log.d ("bluetooth_helper", "Trying to list all available devices");
+
+		if (checkAdapterAvailability ()) {
+			Log.d ("bluetooth_helper", "Starting bluetooth device discovery...");
+			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothDevice.ACTION_FOUND));
+			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED));
+			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+
+			this.bluetoothAdapter.startDiscovery ();
+		}
 	}
 
 	private boolean checkAdapterAvailability () {
@@ -96,69 +183,36 @@ public class BluetoothScanner {
 			Log.d ("bluetooth_helper", "App doesn't has location permission granted");
 			ActivityCompat.requestPermissions (
 					activity,
-					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+					new String[] { Manifest.permission.ACCESS_COARSE_LOCATION },
 					LOCATION_ENABLE_REQUEST_CODE
 			);
 		}
 
 		return state;
 	}
+	//</editor-fold>
 
-	public boolean isAdapterAvailable () {
-		return this.bluetoothAdapter != null && this.bluetoothAdapter.isEnabled ();
-	}
-
-	public void stopDiscovery () {
-		if (this.isAdapterAvailable () && this.bluetoothAdapter.isDiscovering ())
-			this.bluetoothAdapter.cancelDiscovery ();
-	}
-
-	public void requestAvailableDevices () {
-		Log.d ("bluetooth_helper", "Trying to list all available devices");
-		if (checkAdapterAvailability ()) {
-			Log.d ("bluetooth_helper", "Starting bluetooth device discovery...");
-			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothDevice.ACTION_FOUND));
-			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_STARTED));
-			this.activity.registerReceiver (this.bluetoothBroadcastReceiver, new IntentFilter (BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-			this.bluetoothAdapter.startDiscovery ();
-		}
-	}
-
+	//<editor-fold defaultstate="Collapsed" desc="Internal utils">
 	private void openBluetoothSettings () {
 		Log.d ("bluetooth_helper", "Opening bluetooth settngs screen...");
 		Intent intent = new Intent (BluetoothAdapter.ACTION_REQUEST_ENABLE);
 		this.activity.startActivityForResult (intent, BLUETOOTH_ENABLE_REQUEST_CODE);
 	}
 
-	public void handleActivityResult (int requestCode, int resultCode, Intent data) {
-		// Check if we're able to restart
-		if (requestCode == BLUETOOTH_ENABLE_REQUEST_CODE) {
-			if (this.bluetoothAdapter.isEnabled ()) {
-				this.requestAvailableDevices ();
-			} else {
-				this.listener.onBluetoothError ("O seu adaptador Bluetooth está desativado!");
-			}
-		}
-	}
-
-	public void handlePermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+	public boolean handlePermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
 		if (requestCode == LOCATION_ENABLE_REQUEST_CODE) {
 			if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-				this.requestAvailableDevices ();
+				this.startDiscovery ();
 			} else {
 				this.listener.onBluetoothError ("Permissão de GPS negada!");
 			}
-		}
-	}
 
-	public boolean pairWith (BluetoothDevice device) {
-		try {
-			return device.createBond ();
-		} catch (Exception e) {
-			e.printStackTrace ();
+			return true;
+		} else {
 			return false;
 		}
 	}
+	//</editor-fold>
 
 	public interface BluetoothScanListener {
 

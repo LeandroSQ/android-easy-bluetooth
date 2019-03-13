@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothScanner.
 		this.ivRefreshDevices.setVisibility (View.GONE);
 		this.adapter.clearList ();
 
-		this.bluetoothScanner.requestAvailableDevices ();
+		this.bluetoothScanner.startDiscovery ();
 	}
 
 	private void stopBluetoothDeviceScan () {
